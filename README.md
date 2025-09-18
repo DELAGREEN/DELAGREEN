@@ -1,4 +1,4 @@
-<h1 align="center">🐉 DELAGREEN / experienced coder </h1>
+<h1 align="center">🐉 DELAGREEN </h1>
 
 ###
 
