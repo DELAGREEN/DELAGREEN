@@ -2,32 +2,30 @@ name: Generate GitHub Snake Game
 
 on:
   schedule:
-    # Запускается каждый день в 00:00 UTC (в 03:00 по Мск)
-    - cron: "0 0 * * *"
-  workflow_dispatch: # Позволяет запускать workflow вручную
+    - cron: "0 0 * * *" # Runs every day at midnight UTC
+  workflow_dispatch:
   push:
-    branches: [ "main" ] # Запускается при пуше в main ветку
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions: 
+      contents: write # Даем GITHUB_TOKEN права на запись (пригодится для git stash)
 
     steps:
-      # Шаг 1: Проверить код репозитория
       - uses: actions/checkout@v4
+        with: # Ключевой момент: проверяем репо с помощью PAT
+          token: ${{ secrets.SNAKE_GAME_TOKEN }}
 
-      # Шаг 2: Сгенерировать svg-файлы змеи
       - uses: Platane/snk@v3
         with:
-          github_user_name: ${{ github.repository_owner }} # Автоматически использует владельца репозитория
+          github_user_name: ${{ github.repository_owner }}
           outputs: |
             dist/github-snake.svg
             dist/github-snake-dark.svg?color_scheme=dark
-            dist/official-snake.svg?palette=github-dark
 
-      # Шаг 3: Выложить сгенерированные файлы обратно в репозиторий
-      - run: git stash # Сначала сохраняем незакоммиченные изменения (если есть)
-      - name: Push changes
+      - name: Commit and Push Changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
