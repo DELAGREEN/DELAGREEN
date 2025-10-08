@@ -11,25 +11,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions: 
-      contents: write # Даем GITHUB_TOKEN права на запись (пригодится для git stash)
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
-        with: # Ключевой момент: проверяем репо с помощью PAT
+        with:
           token: ${{ secrets.SNAKE_GAME_TOKEN }}
 
-      - uses: Platane/snk@v3
+      - name: Generate snake animations
+        uses: Platane/snk@v3
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
             dist/github-contribution-grid-snake.svg
             dist/github-contribution-grid-snake-dark.svg?palette=github-dark
 
-
       - name: Commit and Push Changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add dist/.
-          git commit -m "Update snake animations"
-          git push
+          # Проверяем, есть ли изменения для коммита
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update snake animations"
+            git push
+          fi
